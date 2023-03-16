@@ -1,6 +1,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 
 #contents = File.read('event_attenndees.csv')
 #puts contents
@@ -182,14 +183,10 @@ def legislators_by_zipcode(zip)
   end
 end
 
-contents = CSV.open(
-  'event_attendees.csv',
-  headers: true,
-  header_converters: :symbol
-)
-
-template_letter = File.read('form_letter.erb')
-erb_template = ERB.new template_letter
+def clean_phonenumber(phone)
+  phone.to_s.gsub!(/\D/, "")
+  puts phone.length() == 10 || phone.length() == 11 ? phone.length() == 11 ? phone.slice!(1..-1) : phone : "Bad number"
+end
 
 def save_thank_you_letter(id, form_letter)
   Dir.mkdir('output') unless Dir.exist?('output')
@@ -201,15 +198,51 @@ def save_thank_you_letter(id, form_letter)
   end
 end
 
+contents = CSV.open(
+  'event_attendees.csv',
+  headers: true,
+  header_converters: :symbol
+)
+
+content_size = File.read('event_attendees.csv').length
+template_letter = File.read('form_letter.erb')
+erb_template = ERB.new template_letter
+
+reg_hour = Array.new(content_size)
+reg_date = []
+j = 0
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
+  phone = row[:homephone]
+  regdate = row[:regdate]
 
   form_letter = erb_template.result(binding)
 
-  save_thank_you_letter(id, form_letter)
+  reg_date_to_print =  DateTime.strptime(regdate, "%m/%d/%Y %k:%M")
+
+  #reg_hour[j] = reg_date_to_print.hour
+  reg_date[j] = reg_date_to_print.wday
+  j += 1 ##do the hour
+
+  #save_thank_you_letter(id, form_letter)
+
+  #clean_phonenumber(phone)
 end
 
+def final(arr)
+  array = Hash.new(0)
+  arr.each { |a| array[a]+=1}
+  arr.uniq.map{ |n| array.count(n)}.max
+end
+
+def day(arr)
+  freq = arr.inject(Hash.new(0)) { |h, v| h[v] += 1; h}
+  arr.max_by { |v| freq[v]}
+end
+
+puts "Monday is the day where people registered the most" if day(reg_date) == 1
+puts "Hour: #{final(reg_hour)}"
 ##----------------------------------------------------------------
