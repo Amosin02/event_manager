@@ -208,7 +208,7 @@ content_size = File.read('event_attendees.csv').length
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
-reg_hour = Array.new(content_size)
+reg_hour = []
 reg_date = []
 j = 0
 contents.each do |row|
@@ -223,19 +223,13 @@ contents.each do |row|
 
   reg_date_to_print =  DateTime.strptime(regdate, "%m/%d/%Y %k:%M")
 
-  #reg_hour[j] = reg_date_to_print.hour
+  reg_hour[j] = reg_date_to_print.hour
   reg_date[j] = reg_date_to_print.wday
-  j += 1 ##do the hour
+  j += 1 
 
   #save_thank_you_letter(id, form_letter)
 
   #clean_phonenumber(phone)
-end
-
-def final(arr)
-  array = Hash.new(0)
-  arr.each { |a| array[a]+=1}
-  arr.uniq.map{ |n| array.count(n)}.max
 end
 
 def day(arr)
@@ -244,5 +238,5 @@ def day(arr)
 end
 
 puts "Monday is the day where people registered the most" if day(reg_date) == 1
-puts "Hour: #{final(reg_hour)}"
+puts "1pm is the most active hour that people registers" if day(reg_hour) == 13
 ##----------------------------------------------------------------
