@@ -211,6 +211,8 @@ erb_template = ERB.new template_letter
 reg_hour = []
 reg_date = []
 j = 0
+
+araw = {0 => "Sunday", 1 => "Monday", 2 => "Tuesday", 3 => "Wednesday", 4 => "Thursday", 5 => "Friday", 6 => "Saturday"}
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
@@ -227,9 +229,9 @@ contents.each do |row|
   reg_date[j] = reg_date_to_print.wday
   j += 1 
 
-  #save_thank_you_letter(id, form_letter)
+  save_thank_you_letter(id, form_letter)
 
-  #clean_phonenumber(phone)
+  clean_phonenumber(phone)
 end
 
 def day(arr)
@@ -237,6 +239,21 @@ def day(arr)
   arr.max_by { |v| freq[v]}
 end
 
-puts "Monday is the day where people registered the most" if day(reg_date) == 1
-puts "1pm is the most active hour that people registers" if day(reg_hour) == 13
+def days_to_target(arr, araw)
+  repetead_values = arr.group_by { |i| i }
+    .select { |k, v| v.length > 1}
+    .keys
+
+  j = 0
+  while j < repetead_values.length
+    puts "#{araw[repetead_values[j]]}" 
+    j += 1
+  end
+  puts "are/is the busiest"
+end
+
+puts "\n#{araw[day(reg_date)]} is the day where people registered the most"
+puts "1pm is the most active hour that people registers\n\n" if day(reg_hour) == 13
+
+days_to_target(reg_date, araw)
 ##----------------------------------------------------------------
